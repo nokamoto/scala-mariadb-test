@@ -6,7 +6,7 @@ scala:
   - 2.11.8
 
 script:
-  - sbt compile test:compile test
+  - sbt compile test:compile test assembly
 
 jdk:
   - oraclejdk8
