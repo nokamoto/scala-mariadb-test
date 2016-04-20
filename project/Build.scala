@@ -3,6 +3,7 @@ import java.util.Properties
 import org.flywaydb.sbt.FlywayPlugin.autoImport._
 import sbt.Keys._
 import sbt._
+import sbtassembly.AssemblyKeys._
 import scalikejdbc.mapper.SbtPlugin.scalikejdbcSettings
 
 import scala.reflect.io.File
@@ -21,6 +22,7 @@ object Build extends sbt.Build {
     flywayUser := scalikejdbcProperties.getProperty("jdbc.username"),
     flywayPassword := scalikejdbcProperties.getProperty("jdbc.password"),
     flywaySchemas := scalikejdbcProperties.getProperty("jdbc.schema") :: Nil,
+    assemblyJarName in assembly := "scala-mariadb-test.jar",
     libraryDependencies ++= Seq(
       "org.flywaydb" % "flyway-core" % buildinfo.BuildInfo.flywayVersion,
       "org.mariadb.jdbc" % "mariadb-java-client" % buildinfo.BuildInfo.mariadbVersion,

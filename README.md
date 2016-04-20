@@ -12,3 +12,8 @@ sbt "scalikejdbcGen person"
 ```
 sbt -Dhosts=${hosts} -Dusername=${username} -Dpassword=${password} -Dschema=${schema} run
 ```
+
+```
+sbt assembly
+java -Dhosts=${hosts} -Dusername=${username} -Dpassword=${password} -Dschema=${schema} -jar target/scala-2.11/scala-mariadb-test.jar
+```
