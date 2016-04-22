@@ -22,12 +22,16 @@ object Main {
     Future(blocking(withSQL(deleteFrom(Person).where.eq(Person.column.id, id)).update().apply()))
   }
 
+  implicit class Sync[A](future: Future[A]) {
+    def sync(implicit c: ExecutionContext): A = Await.result(future, Duration.Inf)
+  }
+
   def main(args: Array[String]): Unit = {
     val flyway = new Flyway
     val url = s"""jdbc:mariadb://${sys.props.getOrElse("hosts", "localhost")}"""
     val user = sys.props.getOrElse("username", "root")
     val password = sys.props.getOrElse("password", "root")
-    val schema = sys.props.getOrElse("schema", "default")
+    val schema = sys.props.getOrElse("schema", "flyway")
     flyway.setDataSource(url, user, password)
     flyway.setSchemas(schema)
 
@@ -45,19 +49,14 @@ object Main {
     while (true) {
       val who = Random.alphanumeric.take(10).mkString
 
-      val future = NamedDB(name).futureLocalTx { implicit session =>
-        for {
-          res0 <- add(who)
-          res1 <- get(res0.id)
-          res2 <- delete(res0.id)
-        } yield  {
-          println(s"add($who)=$res0")
-          println(s"get(${res0.id})=$res1")
-          println(s"delete(${res0.id})=$res2")
-        }
-      }
+      val person = NamedDB(name).futureLocalTx(add(who)(_)).sync
+      println(s"$person")
 
-      Await.result(future, Duration.Inf)
+      val found = NamedDB(name).futureLocalTx(get(person.id)(_)).sync
+      require(found.contains(person))
+
+      val deleted = NamedDB(name).futureLocalTx(delete(person.id)(_)).sync
+      require(deleted == 1)
 
       Thread.sleep(1000)
     }
